@@ -200,9 +200,13 @@ vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper win
 vim.keymap.set('i', '{', '{}<Esc>ha')
 vim.keymap.set('i', '(', '()<Esc>ha')
 vim.keymap.set('i', '[', '[]<Esc>ha')
+vim.keymap.set('i', '<', '<><Esc>ha')
 vim.keymap.set('i', '"', '""<Esc>ha')
 vim.keymap.set('i', "'", "''<Esc>ha")
 vim.keymap.set('i', '`', '``<Esc>ha')
+
+-- save with root without using sudo to open file
+vim.keymap.set('n', '<leader>wr', '<cmd>w !sudo tee % > /dev/null<CR>')
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
