@@ -31,14 +31,15 @@ vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right win
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
+-- using autopairs plugins to replace
 -- autocomplete brackets keymap
-vim.keymap.set('i', '{', '{}<Esc>ha')
-vim.keymap.set('i', '(', '()<Esc>ha')
-vim.keymap.set('i', '[', '[]<Esc>ha')
-vim.keymap.set('i', '<', '<><Esc>ha')
-vim.keymap.set('i', '"', '""<Esc>ha')
-vim.keymap.set('i', "'", "''<Esc>ha")
-vim.keymap.set('i', '`', '``<Esc>ha')
+-- vim.keymap.set('i', '{', '{}<Esc>ha')
+-- vim.keymap.set('i', '(', '()<Esc>ha')
+-- vim.keymap.set('i', '[', '[]<Esc>ha')
+-- vim.keymap.set('i', '<', '<><Esc>ha')
+-- vim.keymap.set('i', '"', '""<Esc>ha')
+-- vim.keymap.set('i', "'", "''<Esc>ha")
+-- vim.keymap.set('i', '`', '``<Esc>ha')
 
 -- save with root without using sudo to open file
 vim.keymap.set('n', '<leader>wr', '<cmd>w !sudo tee % > /dev/null<CR>')
