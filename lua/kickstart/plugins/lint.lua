@@ -7,6 +7,29 @@ return {
       local lint = require 'lint'
       lint.linters_by_ft = {
         markdown = { 'markdownlint' },
+        cpp = { 'clangtidy' },
+      }
+
+      local BUILD_DIR = function()
+        local CURR_DIR = vim.fn.expand '%:p:h'
+        local depth = 5
+        while vim.fn.isdirectory(CURR_DIR .. '/build') == 0 and depth > 0 do
+          local parent = CURR_DIR:match '(.+)/[^/]+$'
+          if not parent or parent == CURR_DIR then
+            break -- Stop if we can't go up further
+          end
+          CURR_DIR = parent
+          depth = depth - 1
+        end
+        if CURR_DIR == '~' then
+          return '-p=./build'
+        end
+        return '-p=' .. CURR_DIR .. '/build'
+      end
+
+      local clanglint = require('lint').linters.clangtidy
+      clanglint.args = {
+        BUILD_DIR,
       }
 
       -- To allow other plugins to add linters to require('lint').linters_by_ft,
