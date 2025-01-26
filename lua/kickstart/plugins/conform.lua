@@ -31,8 +31,20 @@ return {
           lsp_format = lsp_format_opt,
         }
       end,
+      formatters = {
+        ['markdownlint-cli2'] = {
+          condition = function(_, ctx)
+            local diag = vim.tbl_filter(function(d)
+              return d.source == 'markdownlint'
+            end, vim.diagnostic.get(ctx.buf))
+            return #diag > 0
+          end,
+        },
+      },
       formatters_by_ft = {
         lua = { 'stylua' },
+        ['markdown'] = { 'prettier', 'markdownlint-cli2' },
+        ['markdown.mdx'] = { 'prettier', 'markdownlint-cli2' },
         -- Conform can also run multiple formatters sequentially
         -- python = { "isort", "black" },
         --
