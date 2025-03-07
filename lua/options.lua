@@ -63,3 +63,6 @@ vim.opt.scrolloff = 20
 
 -- obsidian.nvim required
 vim.opt.conceallevel = 2
+
+-- Set indent with space
+vim.opt.expandtab = true
