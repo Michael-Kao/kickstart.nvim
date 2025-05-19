@@ -66,3 +66,6 @@ vim.opt.conceallevel = 2
 
 -- Set indent with space
 vim.opt.expandtab = true
+
+-- Enable Diagnostic
+vim.diagnostic.config { virtual_text = true }
