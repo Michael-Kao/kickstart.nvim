@@ -87,6 +87,9 @@ require('lazy').setup({
   -- require 'kickstart.plugins.markdown_renderer',
   require 'kickstart.plugins.obsidian',
 
+  -- file explorer
+  require 'kickstart.plugins.oil',
+
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
   --
