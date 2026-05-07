@@ -17,6 +17,87 @@ return {
 
     -- see below for full list of optional dependencies 👇
   },
+  keys = function()
+    local vault = vim.fn.expand '~/vault'
+
+    local function topic_from_current_buffer()
+      local file = vim.api.nvim_buf_get_name(0)
+      if file == '' then
+        return nil
+      end
+
+      local root = vim.fs.normalize(vault)
+      local path = vim.fs.normalize(vim.fn.fnamemodify(file, ':p'))
+      if path:sub(1, #root) ~= root then
+        return nil
+      end
+
+      return path:sub(#root + 2):match '^([^/]+)'
+    end
+
+    local function topic_path(topic, ...)
+      return vim.fs.joinpath(vault, topic, ...)
+    end
+
+    local function read_topic_template(name, date, topic, title)
+      topic = topic or topic_from_current_buffer() or 'Workout'
+      local path = topic_path(topic, 'Templates', name)
+      if vim.fn.filereadable(path) == 0 then
+        vim.notify('Template not found: ' .. path, vim.log.levels.ERROR)
+        return nil
+      end
+
+      local lines = vim.fn.readfile(path)
+      title = title or vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ':t:r')
+      local text = table.concat(lines, '\n'):gsub('{{date}}', date):gsub('{{title}}', title)
+      return vim.split(text, '\n', { plain = true })
+    end
+
+    local function select_topic_template(callback)
+      local topic = topic_from_current_buffer()
+      if not topic then
+        vim.notify('Current buffer is not inside the vault: ' .. vault, vim.log.levels.ERROR)
+        return
+      end
+
+      local dir = topic_path(topic, 'Templates')
+      if vim.fn.isdirectory(dir) == 0 then
+        vim.notify('No topic template folder: ' .. dir, vim.log.levels.ERROR)
+        return
+      end
+
+      local files = vim.fn.globpath(dir, '*.md', false, true)
+      if vim.tbl_isempty(files) then
+        vim.notify('No templates found in: ' .. dir, vim.log.levels.ERROR)
+        return
+      end
+
+      local names = vim.tbl_map(function(file)
+        return vim.fn.fnamemodify(file, ':t')
+      end, files)
+
+      vim.ui.select(names, { prompt = 'Template from ' .. topic .. '/Templates:' }, function(choice)
+        if choice then
+          callback(choice, topic)
+        end
+      end)
+    end
+
+    return {
+      {
+        '<leader>ot',
+        function()
+          select_topic_template(function(template, topic)
+            local lines = read_topic_template(template, os.date '%Y-%m-%d', topic)
+            if lines then
+              vim.api.nvim_put(lines, 'l', true, true)
+            end
+          end)
+        end,
+        desc = 'Obsidian insert topic template',
+      },
+    }
+  end,
   opts = {
     legacy_commands = false,
 
@@ -165,6 +246,8 @@ return {
 
     -- Optional, for templates (see below).
     templates = {
+      -- obsidian.nvim supports one static templates folder per workspace.
+      -- Use <leader>ot for dynamic <Topic>/Templates insertion.
       folder = 'templates',
       date_format = '%Y/%m/%d',
       time_format = '%H:%M',
