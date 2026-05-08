@@ -43,3 +43,6 @@ vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper win
 
 -- save with root without using sudo to open file
 vim.keymap.set('n', '<leader>wr', '<cmd>w !sudo tee % > /dev/null<CR>')
+
+-- Copy current file absolute path
+vim.keymap.set('n', '<leader>cp', '<cmd>let @+ = expand("%:p")<CR>', { desc = 'Copy absolute path' })
