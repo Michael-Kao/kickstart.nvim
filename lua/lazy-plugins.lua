@@ -84,7 +84,7 @@ require('lazy').setup({
   --
 
   -- markdown
-  require 'kickstart.plugins.markdown_renderer',
+  require 'kickstart.plugins.markview',
   require 'kickstart.plugins.snacks',
   require 'kickstart.plugins.obsidian',
 
