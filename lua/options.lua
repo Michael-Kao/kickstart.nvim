@@ -61,11 +61,30 @@ vim.opt.cursorline = true
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.opt.scrolloff = 20
 
+-- Raise a dialog instead of failing when an operation would abandon unsaved changes.
+vim.opt.confirm = true
+
 -- obsidian.nvim required
 vim.opt.conceallevel = 2
 
 -- Set indent with space
 vim.opt.expandtab = true
 
--- Enable Diagnostic
-vim.diagnostic.config { virtual_text = true }
+-- Diagnostic defaults
+vim.diagnostic.config {
+  update_in_insert = false,
+  severity_sort = true,
+  float = { border = 'rounded', source = 'if_many' },
+  underline = { severity = { min = vim.diagnostic.severity.WARN } },
+  virtual_text = true,
+  virtual_lines = false,
+  jump = {
+    on_jump = function(_, bufnr)
+      vim.diagnostic.open_float {
+        bufnr = bufnr,
+        scope = 'cursor',
+        focus = false,
+      }
+    end,
+  },
+}
