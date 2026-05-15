@@ -176,7 +176,9 @@ return {
       --  - capabilities (table): Override fields in capabilities. Can be used to disable certain LSP features.
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
-      local function clangd_cmd()
+      vim.g.clangd_openbmc_flags_enabled = vim.g.clangd_openbmc_flags_enabled or false
+
+      local function clangd_query_drivers()
         local query_drivers = {}
 
         for _, compiler in ipairs { vim.env.CXX, vim.env.CC } do
@@ -203,18 +205,23 @@ return {
         table.insert(query_drivers, '/usr/local/oecore-*/sysroots/*/usr/bin/*/*')
         table.insert(query_drivers, '/usr/local/oecore-x86_64/sysroots/x86_64-*/usr/bin/*/*')
 
-        return {
-          'clangd',
-          '--background-index',
-          '--query-driver=' .. table.concat(query_drivers, ','),
-        }
+        return table.concat(query_drivers, ',')
+      end
+
+      local function clangd_cmd()
+        local cmd = { 'clangd', '--background-index' }
+
+        if vim.g.clangd_openbmc_flags_enabled then
+          table.insert(cmd, '--query-driver=' .. clangd_query_drivers())
+        end
+
+        return cmd
       end
 
       local servers = {
         clangd = {
           capabilities = capabilities,
           cmd = clangd_cmd(),
-          root_dir = require('lspconfig.util').root_pattern('build/compile_commands.json', '.git'),
         },
         -- gopls = {},
         -- pyright = {},
@@ -270,7 +277,6 @@ return {
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
       require('mason-lspconfig').setup {
-        ensure_installed = vim.tbl_keys(servers or {}),
         automatic_enable = false,
       }
 
@@ -279,6 +285,31 @@ return {
         vim.lsp.config(server_name, server)
         vim.lsp.enable(server_name)
       end
+
+      local function restart_clangd_buffers()
+        for _, client in ipairs(vim.lsp.get_clients { name = 'clangd' }) do
+          client:stop()
+        end
+
+        vim.schedule(function()
+          for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+            if vim.api.nvim_buf_is_loaded(bufnr) and vim.tbl_contains({ 'c', 'cpp', 'objc', 'objcpp', 'cuda' }, vim.bo[bufnr].filetype) then
+              vim.api.nvim_exec_autocmds('FileType', { buffer = bufnr, modeline = false })
+            end
+          end
+        end)
+      end
+
+      local function toggle_clangd_openbmc_flags()
+        vim.g.clangd_openbmc_flags_enabled = not vim.g.clangd_openbmc_flags_enabled
+        servers.clangd.cmd = clangd_cmd()
+        vim.lsp.config('clangd', servers.clangd)
+        restart_clangd_buffers()
+        vim.notify('clangd OpenBMC flags: ' .. (vim.g.clangd_openbmc_flags_enabled and 'enabled' or 'disabled'))
+      end
+
+      vim.api.nvim_create_user_command('ClangdToggleOpenBMCFlags', toggle_clangd_openbmc_flags, {})
+      vim.keymap.set('n', '<leader>tC', toggle_clangd_openbmc_flags, { desc = '[T]oggle [C]langd OpenBMC flags' })
     end,
   },
 }
