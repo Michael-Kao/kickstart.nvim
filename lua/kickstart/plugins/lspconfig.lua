@@ -178,10 +178,18 @@ return {
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       vim.g.clangd_openbmc_flags_enabled = vim.g.clangd_openbmc_flags_enabled or false
 
+      -- Capture the shell compiler environment before Tree-sitter forces host
+      -- compilers for native parser builds. These may be OpenBMC cross compilers
+      -- and are still useful for clangd's --query-driver flag.
+      vim.g.clangd_original_cc = vim.g.clangd_original_cc or vim.env.CC
+      vim.g.clangd_original_cxx = vim.g.clangd_original_cxx or vim.env.CXX
+      local clangd_env_cc = vim.g.clangd_original_cc
+      local clangd_env_cxx = vim.g.clangd_original_cxx
+
       local function clangd_query_drivers()
         local query_drivers = {}
 
-        for _, compiler in ipairs { vim.env.CXX, vim.env.CC } do
+        for _, compiler in ipairs { clangd_env_cxx, clangd_env_cc } do
           if compiler and compiler ~= '' then
             local compiler_bin = vim.split(compiler, '%s+')[1]
             table.insert(query_drivers, compiler_bin)

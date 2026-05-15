@@ -7,6 +7,21 @@ return {
       local treesitter = require 'nvim-treesitter'
       local ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' }
 
+      vim.g.clangd_original_cc = vim.g.clangd_original_cc or vim.env.CC
+      vim.g.clangd_original_cxx = vim.g.clangd_original_cxx or vim.env.CXX
+
+      -- Tree-sitter parsers are native Neovim plugins, so they must be built
+      -- with the host compiler. This prevents OpenBMC cross-compiler
+      -- environments from breaking parser installation with flags like -m64.
+      local host_cc = vim.fn.exepath 'gcc'
+      local host_cxx = vim.fn.exepath 'g++'
+      if host_cc ~= '' then
+        vim.env.CC = host_cc
+      end
+      if host_cxx ~= '' then
+        vim.env.CXX = host_cxx
+      end
+
       treesitter.setup()
       treesitter.install(ensure_installed)
 
